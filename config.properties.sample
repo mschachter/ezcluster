@@ -1,0 +1,9 @@
+[ec2]
+region=us-west-1
+cert_file=<path to cert .pem file>
+private_key_file=<path to your private key .pem file>
+keypair_file=<path to your keypair file>
+user=<ssh username>
+
+[sqs]
+queue_name=ezcluster
