@@ -6,7 +6,8 @@ keypair_file=<path to your keypair file>
 user=<ssh username>
 
 [sqs]
-queue_name=ezcluster
+job_queue=ezcluster_jobs
+status_queue=ezcluster_status
 
 [s3]
 bucket=<your s3 bucket name>

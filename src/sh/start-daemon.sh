@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export EC2_HOME=/usr/bin
 export EC2_PRIVATE_KEY=/tmp/private_key.pem
@@ -12,14 +12,22 @@ export NUM_JOBS_PER_INSTANCE=#NUM_JOBS_PER_INSTANCE#
 
 export PYTHONPATH=$PYTHONPATH:/tmp/ezcluster/src/python
 
+echo "Copying ezcluster from S3"
 #copy ezcluster from S3
 cd /tmp
-s3cmd --config /tmp/s3cfg get s3://#BUCKET#/ezcluster.tgz
+s3cmd get s3://#BUCKET#/ezcluster.tgz
 tar xvzf ezcluster.tgz
 rm ezcluster.tgz
 
-#APPLICATION_SCRIPT#
+echo "Sourcing application script..."
+if [ -f /tmp/application-script.sh ]
+then
+    source /tmp/application-script.sh
+fi
+
+echo "PYTHONPATH=$PYTHONPATH"
 
 #run ezcluster Daemon
-
-
+echo "Starting daemon..."
+python /tmp/ezcluster/src/python/ezcluster/daemon.py &
+echo "Daemon started... all done!"
