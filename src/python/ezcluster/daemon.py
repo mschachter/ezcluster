@@ -127,6 +127,7 @@ class Daemon():
         logger.debug('Starting job from batch %s with id %d' % (j.batch_id, j.id))
         
         log_file = os.path.join(self.output_dir, j.log_file_template % j.id)
+        print 'Opening log file: %s' % log_file
         fd = open(log_file, 'w')
         j.fd = fd
         j.log_file = log_file

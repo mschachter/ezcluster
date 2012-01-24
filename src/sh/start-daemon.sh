@@ -12,6 +12,9 @@ export NUM_JOBS_PER_INSTANCE=#NUM_JOBS_PER_INSTANCE#
 
 export PYTHONPATH=$PYTHONPATH:/tmp/ezcluster/src/python
 
+mkdir /home/ubuntu/.matplotlib
+chmod -R 777 /home/ubuntu/.matplotlib
+
 echo "Copying ezcluster from S3"
 #copy ezcluster from S3
 cd /tmp
