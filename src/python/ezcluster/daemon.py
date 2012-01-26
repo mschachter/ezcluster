@@ -147,16 +147,19 @@ class Daemon():
         
         status_msg = self.create_status_message(j, is_new=is_new)
         
+        write_to_queue = True
         if not is_new:
             if status_msg['status'] == 'finished':
                 logger.debug('Job %d is complete with exit code %d' % (j.id, status_msg['ret_code']))
                 j.fd.close()
                 del self.jobs[j.id]
             else:
+                write_to_queue = False
                 logger.debug('Job %d is still running...' % j.id)
-        
-        msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
-        j.msg = msg
+                
+        if write_to_queue:
+            msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
+            j.msg = msg
         
         if not is_new:
             #copy logfile to s3 bucket
