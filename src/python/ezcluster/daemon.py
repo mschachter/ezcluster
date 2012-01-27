@@ -153,6 +153,14 @@ class Daemon():
                 logger.debug('Job %d is complete with exit code %d' % (j.id, status_msg['ret_code']))
                 j.fd.close()
                 del self.jobs[j.id]
+                
+                #copy logfile to s3 bucket
+                (rootdir, log_filename) = os.path.split(j.log_file)
+                dest_file = os.path.join(self.bucket_path, 'logs', log_filename)
+                key = self.bucket.new_key(dest_file)
+                key.set_contents_from_filename(j.log_file)
+                logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
+                
             else:
                 write_to_queue = False
                 logger.debug('Job %d is still running...' % j.id)
@@ -160,14 +168,7 @@ class Daemon():
         if write_to_queue:
             msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
             j.msg = msg
-        
-        if not is_new:
-            #copy logfile to s3 bucket
-            (rootdir, log_filename) = os.path.split(j.log_file)
-            dest_file = os.path.join(self.bucket_path, 'logs', log_filename)
-            key = self.bucket.new_key(dest_file)
-            key.set_contents_from_filename(j.log_file)
-            logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
+            
 
     def create_status_message(self, j, is_new=False):
         status_msg = {}
