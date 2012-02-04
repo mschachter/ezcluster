@@ -1,3 +1,6 @@
+import time
+import hashlib
+
 from ezcluster.core import *
 
 class Launcher():
@@ -67,8 +70,12 @@ class Launcher():
         ret_code = proc.poll()
         return ret_code
     
-    #"nohup /tmp/start-daemon.sh >> /tmp/ezcluster-daemon.log 2>> /tmp/ezcluster-daemon.log < /dev/null &"
-   
+    
+    def generate_job_id(self):
+        s = '%0.6f' % time.time()
+        md5 = hashlib.md5()
+        md5.update(s)
+        return md5.hexdigest()    
         
     def add_batch_job(self, cmds, num_cpus=1, expected_runtime=-1, log_file_template=None):
         """ Adds a job to the local queue, job will be posted to SQS queue with call to post_jobs """
@@ -87,12 +94,12 @@ class Launcher():
             batch_id = random_string(10)
         for k,j in enumerate(self.jobs):
             j.batch_id = batch_id
-            self.post_job(j, id=k)
+            self.post_job(j, id=self.generate_job_id())
             
     def post_job(self, j, id=None):
         """ Posts a single job to SQS queue """
         if id is None:
-            id = len(self.jobs) + np.random.randint(0, 1000)            
+            id = self.generate_job_id()            
         j.id = id
         ji = j.to_dict()        
         ji['batch_id'] = str(j.batch_id)            

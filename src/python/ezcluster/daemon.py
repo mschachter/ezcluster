@@ -91,7 +91,7 @@ class Daemon():
                 if msg_data['type'] == 'job':
                     job_info = copy(msg_data)
                     self.job_queue.delete_message(msg)
-                    logger.debug('Got job from batch %s with id %d, deleted work order from queue.' %\
+                    logger.debug('Got job from batch %s with id %s, deleted work order from queue.' %\
                                   (job_info['batch_id'], job_info['id']))
                     return job_info
             time.sleep(sleep_time)
@@ -124,9 +124,9 @@ class Daemon():
         
         j = job_from_dict(job_info)
         j.batch_id = job_info['batch_id']
-        logger.debug('Starting job from batch %s with id %d' % (j.batch_id, j.id))
+        logger.debug('Starting job from batch %s with id %s' % (j.batch_id, j.id))
         
-        log_file = os.path.join(self.output_dir, j.log_file_template % j.id)
+        log_file = os.path.join(self.output_dir, j.log_file_template)
         print 'Opening log file: %s' % log_file
         fd = open(log_file, 'w')
         j.fd = fd
@@ -150,7 +150,7 @@ class Daemon():
         write_to_queue = True
         if not is_new:
             if status_msg['status'] == 'finished':
-                logger.debug('Job %d is complete with exit code %d' % (j.id, status_msg['ret_code']))
+                logger.debug('Job %s is complete with exit code %d' % (j.id, status_msg['ret_code']))
                 j.fd.close()
                 del self.jobs[j.id]
                 
@@ -163,7 +163,7 @@ class Daemon():
                 
             else:
                 write_to_queue = False
-                logger.debug('Job %d is still running...' % j.id)
+                logger.debug('Job %s is still running...' % j.id)
                 
         if write_to_queue:
             msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
