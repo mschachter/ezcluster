@@ -188,6 +188,7 @@ class Launcher():
         params['INSTANCE_ID'] = instance.id
         params['NUM_JOBS_PER_INSTANCE'] = self.num_jobs_per_instance
         params['BUCKET'] = config.get('s3', 'bucket')
+        params['QUIT_WHEN_EMPTY'] = config.get('ec2','quit_when_empty')
          
         self.fill_template_and_scp(instance, params,
                                    os.path.join(SH_DIR, 'start-daemon.sh'),

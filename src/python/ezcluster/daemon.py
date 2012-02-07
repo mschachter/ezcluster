@@ -99,10 +99,12 @@ class Daemon():
         logger.debug('No jobs found, timing out returning None...')
         return None
 
-    def run(self, quit_when_empty=False, sleep_time=60.0):
+    def run(self, quit_when_empty=False, timeout_after=30.0, sleep_time=60.0):
         """ Run until there are no jobs left to run """        
         
         logger.debug('Starting daemon...')
+        start_time = time.time()
+        next_job=None
         while True:
             if len(self.jobs) > 0:
                 logger.debug('Updating job statuses..')
@@ -112,13 +114,31 @@ class Daemon():
             if len(self.jobs) > 0:    
                 logger.debug('# of running jobs: %d' % len(self.jobs))            
             while len(self.jobs) < self.num_jobs_per_instance:
-                next_job = self.get_next_job()
+                if next_job is None:
+                    next_job = self.get_next_job()
                 if next_job is None:
                     break
+                start_time = time.time()
                 self.run_job(next_job)
+                next_job=None
             time.sleep(sleep_time)
-        
-                    
+            if next_job is None:
+                next_job=self.get_next_job()
+            timed_out=False
+            if next_job is None:
+                timed_out = (time.time() - start_time) > timeout_after
+            else:
+                start_time = time.time()
+            if quit_when_empty and timed_out:
+                break
+        logger.debug('No jobs found, waiting for current jobs to complete...')
+        for j in self.jobs.values():
+            status_msg = self.create_status_message(j)
+            if not status_msg['status'] == 'finished':
+                j.proc.wait()
+        logger.debug('All jobs completed, shutting down instance...')
+        self.instance.terminate()
+
     def run_job(self, job_info):
         """ Run an individual job from the SQS queue. """
         
@@ -192,5 +212,8 @@ class Daemon():
 
 
 if __name__ == '__main__':
+    quit_when_empty=False
+    if len(sys.argv)>1:
+        quit_when_empty=(sys.argv[1]=='True')
     d = Daemon()
-    d.run()
+    d.run(quit_when_empty=quit_when_empty)

@@ -4,6 +4,7 @@ cert_file=<path to cert .pem file>
 private_key_file=<path to your private key .pem file>
 keypair_file=<path to your keypair file>
 user=<ssh username>
+quit_when_empty=<True or False>
 
 [sqs]
 job_queue=ezcluster_jobs

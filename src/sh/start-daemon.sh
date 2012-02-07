@@ -32,5 +32,5 @@ echo "PYTHONPATH=$PYTHONPATH"
 
 #run ezcluster Daemon
 echo "Starting daemon..."
-python /tmp/ezcluster/src/python/ezcluster/daemon.py &
+python /tmp/ezcluster/src/python/ezcluster/daemon.py #QUIT_WHEN_EMPTY# &
 echo "Daemon started... all done!"
