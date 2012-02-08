@@ -99,43 +99,46 @@ class Daemon():
         logger.debug('No jobs found, timing out returning None...')
         return None
 
-    def run(self, quit_when_empty=False, timeout_after=30.0, sleep_time=60.0):
+    def run(self, quit_when_empty=False, timeout_after=30.0, sleep_time=10.0):
         """ Run until there are no jobs left to run """        
         
         logger.debug('Starting daemon...')
         start_time = time.time()
-        next_job=None
         while True:
+            # Update job statuses - delete finished jobs
             if len(self.jobs) > 0:
                 logger.debug('Updating job statuses..')
             for j in self.jobs.values():
                 self.update_job_status(j)
         
             if len(self.jobs) > 0:    
-                logger.debug('# of running jobs: %d' % len(self.jobs))            
+                logger.debug('# of running jobs: %d' % len(self.jobs))
+
+            # Get as many jobs as we're allowed and run them
+            next_job=None
             while len(self.jobs) < self.num_jobs_per_instance:
-                if next_job is None:
-                    next_job = self.get_next_job()
+                next_job = self.get_next_job()
                 if next_job is None:
                     break
-                start_time = time.time()
                 self.run_job(next_job)
-                next_job=None
-            time.sleep(sleep_time)
+
+            # If there are no more jobs to run - sleep and check for timeout
             if next_job is None:
-                next_job=self.get_next_job()
-            timed_out=False
-            if next_job is None:
-                timed_out = (time.time() - start_time) > timeout_after
+                time.sleep(sleep_time)
+                if quit_when_empty and (time.time() - start_time) > timeout_after:
+                    break
+            # If just ran a job, reset start time for timeout
             else:
                 start_time = time.time()
-            if quit_when_empty and timed_out:
-                break
+
+        # Wait until currently running jobs are finished
         logger.debug('No jobs found, waiting for current jobs to complete...')
         for j in self.jobs.values():
             status_msg = self.create_status_message(j)
             if not status_msg['status'] == 'finished':
                 j.proc.wait()
+
+        # Kill instance
         logger.debug('All jobs completed, shutting down instance...')
         self.instance.terminate()
 
@@ -146,7 +149,7 @@ class Daemon():
         j.batch_id = job_info['batch_id']
         logger.debug('Starting job from batch %s with id %s' % (j.batch_id, j.id))
         
-        log_file = os.path.join(self.output_dir, j.log_file_template)
+        log_file = os.path.join(self.output_dir, j.log_file_template % j.id)
         print 'Opening log file: %s' % log_file
         fd = open(log_file, 'w')
         j.fd = fd
