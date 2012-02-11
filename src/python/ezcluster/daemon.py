@@ -137,6 +137,7 @@ class Daemon():
             status_msg = self.create_status_message(j)
             if not status_msg['status'] == 'finished':
                 j.proc.wait()
+                self.update_job_status(j)
 
         # Kill instance
         logger.debug('All jobs completed, shutting down instance...')
@@ -149,7 +150,7 @@ class Daemon():
         j.batch_id = job_info['batch_id']
         logger.debug('Starting job from batch %s with id %s' % (j.batch_id, j.id))
         
-        log_file = os.path.join(self.output_dir, j.log_file_template % j.id)
+        log_file = os.path.join(self.output_dir, j.log_file_template)
         print 'Opening log file: %s' % log_file
         fd = open(log_file, 'w')
         j.fd = fd
