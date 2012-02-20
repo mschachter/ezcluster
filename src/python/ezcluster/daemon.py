@@ -123,7 +123,7 @@ class Daemon():
                 self.run_job(next_job)
 
             # If there are no more jobs to run - sleep and check for timeout
-            if next_job is None:
+            if next_job is None and len(self.jobs)<self.num_jobs_per_instance:
                 time.sleep(sleep_time)
                 if quit_when_empty and (time.time() - start_time) > timeout_after:
                     break
