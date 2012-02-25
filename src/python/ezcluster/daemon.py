@@ -107,13 +107,9 @@ class Daemon():
         while True:
             # Update job statuses - delete finished jobs
             if len(self.jobs) > 0:
-                logger.debug('Updating job statuses..')
-            for j in self.jobs.values():
-                self.update_job_status(j)
+                for j in self.jobs.values():
+                    self.update_job_status(j)
         
-            if len(self.jobs) > 0:    
-                logger.debug('# of running jobs: %d' % len(self.jobs))
-
             # Get as many jobs as we're allowed and run them
             next_job=None
             while len(self.jobs) < self.num_jobs_per_instance:
@@ -187,8 +183,7 @@ class Daemon():
                 
             else:
                 write_to_queue = False
-                logger.debug('Job %s is still running...' % j.id)
-                
+
         if write_to_queue:
             msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
             j.msg = msg
