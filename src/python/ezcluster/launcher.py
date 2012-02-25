@@ -19,7 +19,7 @@ class Launcher():
     
     def __init__(self, image_name, keypair_name, instance_type='m1.small',
                  security_groups=['default'], num_instances=1,
-                 num_jobs_per_instance=1):        
+                 num_jobs_per_instance=1, quit_when_done=True):
         
         self.conn = boto.ec2.connect_to_region(config.get('ec2', 'region'))
         
@@ -41,6 +41,7 @@ class Launcher():
         self.num_jobs_per_instance = num_jobs_per_instance        
         self.jobs = []
         self.application_script_file = None
+        self.quit_when_done=quit_when_done
 
     def is_ssh_running(self, instance):
         host_str = '%s@%s' % (config.get('ec2', 'user'), instance.public_dns_name)
@@ -195,7 +196,7 @@ class Launcher():
         params['INSTANCE_ID'] = instance.id
         params['NUM_JOBS_PER_INSTANCE'] = self.num_jobs_per_instance
         params['BUCKET'] = config.get('s3', 'bucket')
-        params['QUIT_WHEN_EMPTY'] = config.get('ec2','quit_when_empty')
+        params['QUIT_WHEN_EMPTY'] = self.quit_when_done
          
         self.fill_template_and_scp(instance, params,
                                    os.path.join(SH_DIR, 'start-daemon.sh'),
