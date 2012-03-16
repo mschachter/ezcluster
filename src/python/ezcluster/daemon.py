@@ -107,13 +107,9 @@ class Daemon():
         while True:
             # Update job statuses - delete finished jobs
             if len(self.jobs) > 0:
-                logger.debug('Updating job statuses..')
-            for j in self.jobs.values():
-                self.update_job_status(j)
+                for j in self.jobs.values():
+                    self.update_job_status(j)
         
-            if len(self.jobs) > 0:    
-                logger.debug('# of running jobs: %d' % len(self.jobs))
-
             # Get as many jobs as we're allowed and run them
             next_job=None
             while len(self.jobs) < self.num_jobs_per_instance:
@@ -122,9 +118,10 @@ class Daemon():
                     break
                 self.run_job(next_job)
 
+            time.sleep(sleep_time)
+
             # If there are no more jobs to run - sleep and check for timeout
-            if next_job is None:
-                time.sleep(sleep_time)
+            if next_job is None and len(self.jobs)<self.num_jobs_per_instance:
                 if quit_when_empty and (time.time() - start_time) > timeout_after:
                     break
             # If just ran a job, reset start time for timeout
@@ -184,11 +181,13 @@ class Daemon():
                 key = self.bucket.new_key(dest_file)
                 key.set_contents_from_filename(j.log_file)
                 logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
+
+                # remove log file from local machine
+                os.remove(j.log_file)
                 
             else:
                 write_to_queue = False
-                logger.debug('Job %s is still running...' % j.id)
-                
+
         if write_to_queue:
             msg = self.status_queue.write(self.status_queue.new_message(body=json.dumps(status_msg)))
             j.msg = msg
