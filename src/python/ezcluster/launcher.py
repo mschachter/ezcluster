@@ -40,6 +40,7 @@ class Launcher():
         self.num_instances = num_instances
         self.num_jobs_per_instance = num_jobs_per_instance        
         self.jobs = []
+        self.instances=[]
         self.application_script_file = None
         self.quit_when_done=quit_when_done
 
@@ -141,6 +142,7 @@ class Launcher():
             for k,inst in enumerate(instances_pending):
                 if inst.update() == 'running' and self.is_ssh_running(inst):
                     self.initialize_instance(inst)
+                    self.instances.append(inst)
                     del instances_pending[k]
                     break
             time.sleep(5.0)
