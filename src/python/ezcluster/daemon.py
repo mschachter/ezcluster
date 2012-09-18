@@ -65,8 +65,7 @@ class Daemon():
         bsp = bpath.split('/')
         self.bucket_name = bsp[0]
         self.bucket_path = ','.join(bsp[1:])
-        self.s3_conn = boto.connect_s3()
-        self.bucket = self.s3_conn.get_bucket(self.bucket_name)
+        self.connect_bucket()
         
         self.jobs = {}        
         logger.info('Daemon initialized and started on instance %s' % self.instance_id)
@@ -76,7 +75,11 @@ class Daemon():
         logger.info('SQS status queue name: %s' % self.status_queue.name)
         logger.info('S3 path: %s/%s' % (self.bucket_name, self.bucket_path))
                 
-        
+
+    def connect_bucket(self):
+        self.s3_conn = boto.connect_s3()
+        self.bucket = self.s3_conn.get_bucket(self.bucket_name)
+
     def get_next_job(self, timeout_after=30.0, sleep_time=1.00, msg_hold_time=15):
         """ Get the next available job in the SQS queue. """        
         
@@ -178,6 +181,9 @@ class Daemon():
                 #copy logfile to s3 bucket
                 (rootdir, log_filename) = os.path.split(j.log_file)
                 dest_file = os.path.join(self.bucket_path, 'logs', log_filename)
+
+                self.connect_bucket()
+
                 key = self.bucket.new_key(dest_file)
                 key.set_contents_from_filename(j.log_file)
                 logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
