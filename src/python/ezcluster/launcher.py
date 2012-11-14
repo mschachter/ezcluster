@@ -19,7 +19,7 @@ class Launcher():
     
     def __init__(self, image_name, keypair_name, instance_type='m1.small',
                  security_groups=['default'], num_instances=1,
-                 num_jobs_per_instance=1, quit_when_done=True):
+                 num_jobs_per_instance=1, quit_when_done=True, wait_for_completion=False):
         
         self.conn = boto.ec2.connect_to_region(config.get('ec2', 'region'))
         
@@ -43,6 +43,7 @@ class Launcher():
         self.instances=[]
         self.application_script_file = None
         self.quit_when_done=quit_when_done
+        self.wait_for_completion=wait_for_completion
 
     def is_ssh_running(self, instance):
         host_str = '%s@%s' % (config.get('ec2', 'user'), instance.public_dns_name)
@@ -151,6 +152,8 @@ class Launcher():
         if timed_out:
             print 'Timed out! Only %d instances were started...' % \
                   (self.num_instances - len(instances_pending))
+        if self.wait_for_completion:
+            self.wait_for_instances()
     
     def fill_template_and_scp(self, instance, params, template_file, dest_file):
         tpl = ScriptTemplate(template_file)
@@ -216,3 +219,13 @@ class Launcher():
     def launch(self):
         self.post_jobs()        
         self.start_instances()
+
+    def wait_for_instances(self):
+        instances_active=True
+        while instances_active:
+            self.conn = boto.ec2.connect_to_region(config.get('ec2', 'region'))
+            instances = self.conn.get_all_instances()
+            if not len(instances):
+                instances_active=False
+            else:
+                time.sleep(30.0)
