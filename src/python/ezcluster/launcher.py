@@ -223,9 +223,9 @@ class Launcher():
     def wait_for_instances(self):
         instances_active=True
         while instances_active:
-            self.conn = boto.ec2.connect_to_region(config.get('ec2', 'region'))
-            instances = self.conn.get_all_instances()
-            if not len(instances):
-                instances_active=False
-            else:
+            instances_active=False
+            for instance in self.instances:
+                if self.is_ssh_running(instance):
+                    instances_active=True
+            if instances_active:
                 time.sleep(30.0)
