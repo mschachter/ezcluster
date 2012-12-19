@@ -230,6 +230,6 @@ class Launcher():
                     print('instance %s running' % instance.public_dns_name)
                     instances_active=True
                 else:
-                    print('instance %s status %s' % (instance.public_dns_name,inst.update()))
+                    print('instance %s status %s' % (instance.public_dns_name,instance.update()))
             if instances_active:
                 time.sleep(30.0)
