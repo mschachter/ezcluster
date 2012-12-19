@@ -226,10 +226,10 @@ class Launcher():
         while instances_active:
             instances_active=False
             for instance in self.instances:
-                if inst.update() == 'running' or self.is_ssh_running(inst):
-                    print('instance %s running' % inst.public_dns_name)
+                if instance.update() == 'running' or self.is_ssh_running(instance):
+                    print('instance %s running' % instance.public_dns_name)
                     instances_active=True
                 else:
-                    print('instance %s status %s' % (inst.public_dns_name,inst.update()))
+                    print('instance %s status %s' % (instance.public_dns_name,inst.update()))
             if instances_active:
                 time.sleep(30.0)
