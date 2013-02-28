@@ -179,18 +179,18 @@ class Daemon():
                 del self.jobs[j.id]
                 
                 #copy logfile to s3 bucket
-                if os.path.exists(j.log_file):
-                    (rootdir, log_filename) = os.path.split(j.log_file)
-                    dest_file = os.path.join(self.bucket_path, 'logs', log_filename)
-
-                    self.connect_bucket()
-
-                    key = self.bucket.new_key(dest_file)
-                    key.set_contents_from_filename(j.log_file)
-                    logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
-
-                    # remove log file from local machine
-                    os.remove(j.log_file)
+#                if os.path.exists(j.log_file):
+#                    (rootdir, log_filename) = os.path.split(j.log_file)
+#                    dest_file = os.path.join(self.bucket_path, 'logs', log_filename)
+#
+#                    self.connect_bucket()
+#
+#                    key = self.bucket.new_key(dest_file)
+#                    key.set_contents_from_filename(j.log_file)
+#                    logger.debug('Copied log file from %s to s3://%s/%s' % (j.log_file, self.bucket_name, dest_file))
+#
+#                    # remove log file from local machine
+#                    os.remove(j.log_file)
                 
             else:
                 write_to_queue = False
