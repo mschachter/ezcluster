@@ -222,10 +222,13 @@ class Launcher():
 
     def wait_for_instances(self):
         instances_active=True
+        print('waiting for completion')
         while instances_active:
             instances_active=False
             for instance in self.instances:
-                if self.is_ssh_running(instance):
+                if instance.update() == 'running' or self.is_ssh_running(instance):
                     instances_active=True
+                else:
+                    print('instance %s status %s' % (instance.public_dns_name,instance.update()))
             if instances_active:
                 time.sleep(30.0)
