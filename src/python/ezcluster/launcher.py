@@ -121,7 +121,7 @@ class Launcher():
             3) Initialize each instance by copying over some files and running a script (see initialize_instance)
         """ 
         
-        send_self_tgz_to_s3()
+        #send_self_tgz_to_s3()
         instances_pending = []
         print 'Starting %d instances...' % self.num_instances
         for k in range(self.num_instances):
