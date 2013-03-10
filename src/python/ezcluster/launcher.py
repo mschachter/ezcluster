@@ -50,7 +50,7 @@ class Launcher():
         ret_code = subprocess.call(['ssh', '-o', 'ConnectTimeout=15',
                                     '-o', 'StrictHostKeyChecking=no',
                                     '-i', config.get('ec2', 'keypair_file'),
-                                    host_str, 'exit'], shell=False)
+                                    host_str, 'exit'], shell=False, close_fds=True)
         return ret_code == 0
         
     def scp(self, instance, src_file, dest_file):
@@ -58,7 +58,7 @@ class Launcher():
         cmds = ['scp', '-o', 'StrictHostKeyChecking=no',
                 '-i', config.get('ec2', 'keypair_file'),
                 src_file, dest_str]
-        subprocess.call(cmds, shell=False)
+        subprocess.call(cmds, shell=False, close_fds=True)
         
     def scmd(self, instance, cmd, use_shell=False, remote_output_file='/dev/null'):        
         host_str = '%s@%s' % (config.get('ec2', 'user'), instance.public_dns_name)        
@@ -68,7 +68,7 @@ class Launcher():
                 '-i', config.get('ec2', 'keypair_file'),
                 host_str, cstr]
         #print ' '.join(cmds)
-        proc = subprocess.Popen(cmds, shell=False)        
+        proc = subprocess.Popen(cmds, shell=False, close_fds=True)
         proc.communicate()
         ret_code = proc.poll()
         return ret_code
