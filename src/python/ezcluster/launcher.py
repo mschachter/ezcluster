@@ -19,7 +19,7 @@ class Launcher():
     
     def __init__(self, image_name, keypair_name, instance_type='m1.small',
                  security_groups=['default'], num_instances=1,
-                 num_jobs_per_instance=1, quit_when_done=True, wait_for_completion=False):
+                 num_jobs_per_instance=1, quit_when_done=True, wait_for_completion=False, instance_name=False):
         
         self.conn = boto.ec2.connect_to_region(config.get('ec2', 'region'))
         
@@ -44,6 +44,7 @@ class Launcher():
         self.application_script_file = None
         self.quit_when_done=quit_when_done
         self.wait_for_completion=wait_for_completion
+        self.instance_name = instance_name
 
     def is_ssh_running(self, instance):
         host_str = '%s@%s' % (config.get('ec2', 'user'), instance.public_dns_name)
@@ -121,7 +122,7 @@ class Launcher():
             3) Initialize each instance by copying over some files and running a script (see initialize_instance)
         """ 
         
-        send_self_tgz_to_s3()
+        #send_self_tgz_to_s3()
         instances_pending = []
         print 'Starting %d instances...' % self.num_instances
         for k in range(self.num_instances):
@@ -131,6 +132,9 @@ class Launcher():
                                  instance_type=self.instance_type)
             if len(res.instances) < 1:
                 raise ConfigException('Could not reserve instance for some reason...')
+            if self.instance_name:
+                self.conn.create_tags([res.instances[0].id], {"Name": self.instance_name + ( ':' + str(k) if self.num_instances > 1 else '' )})
+
             instances_pending.append(res.instances[0])
         
         #give the startup a bit of time
