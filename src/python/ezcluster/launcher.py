@@ -133,7 +133,10 @@ class Launcher():
             if len(res.instances) < 1:
                 raise ConfigException('Could not reserve instance for some reason...')
             if self.instance_name:
-                self.conn.create_tags([res.instances[0].id], {"Name": self.instance_name + ( ':' + str(k) if self.num_instances > 1 else '' )})
+                try:
+                  self.conn.create_tags([res.instances[0].id], {"Name": self.instance_name + ( ':' + str(k) if self.num_instances > 1 else '' )})
+                except:
+                  pass # do nothing
 
             instances_pending.append(res.instances[0])
         
