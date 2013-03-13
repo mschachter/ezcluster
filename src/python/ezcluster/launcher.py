@@ -148,11 +148,14 @@ class Launcher():
         timed_out = False
         while len(instances_pending) > 0 and not timed_out:
             for k,inst in enumerate(instances_pending):
-                if inst.update() == 'running' and self.is_ssh_running(inst):
-                    self.initialize_instance(inst)
-                    self.instances.append(inst)
-                    del instances_pending[k]
-                    break
+                try:
+                    if inst.update() == 'running' and self.is_ssh_running(inst):
+                        self.initialize_instance(inst)
+                        self.instances.append(inst)
+                        del instances_pending[k]
+                        break
+                except:
+                    pass
             time.sleep(5.0)
             timed_out = (time.time() - start_time) > timeout_after
             
